@@ -1,0 +1,104 @@
+/* CommunitiesPanel.css */
+.comm-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px 24px;
+  text-align: center;
+  gap: 10px;
+}
+.comm-hero-icon { font-size: 56px; line-height: 1; }
+.comm-hero h3 { margin: 0; font-size: 17px; font-weight: 600; color: #111b21; }
+.comm-hero p { margin: 0; font-size: 13.5px; color: #667781; line-height: 1.5; }
+
+.comm-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f0f2f5;
+  transition: background 0.12s;
+}
+.comm-row:hover { background: #f5f6f6; }
+
+.comm-icon {
+  font-size: 32px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #f0f2f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.comm-body { flex: 1; overflow: hidden; }
+.comm-name {
+  display: block;
+  font-size: 15px;
+  font-weight: 500;
+  color: #111b21;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.comm-desc {
+  display: block;
+  font-size: 12.5px;
+  color: #667781;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.comm-members { font-size: 11.5px; color: #8696a0; }
+.comm-btn {
+  background: #25d366;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 4px;
+  transition: background 0.2s;
+}
+.comm-btn:hover { background: #1da851; }
+.comm-btn.joined { background: #f0f2f5; color: #667781; }
+.comm-btn.joined:hover { background: #e9edef; }
+
+/* Modal */
+.comm-modal {
+  background: #fff;
+  border-radius: 14px;
+  width: 400px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+}
+.comm-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.comm-modal-header h3 { margin: 0; font-size: 17px; color: #111b21; }
+.comm-modal-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #d1d7db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111b21;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+.comm-modal-input:focus { border-color: #25d366; }
