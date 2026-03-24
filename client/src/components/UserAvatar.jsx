@@ -25,7 +25,7 @@ const UserAvatar = ({ username, size = 'md', profilePicture = null }) => {
 
   if (profilePicture) {
     return (
-      <div className={`avatar avatar-${size} avatar-image`}>
+      <div className={`avatar avatar-${size} avatar-image`} key={`avatar-${profilePicture.substring(0, 30)}`}>
         <img
           src={profilePicture}
           alt={username}

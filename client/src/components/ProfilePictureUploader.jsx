@@ -67,12 +67,23 @@ const ProfilePictureUploader = ({ onPictureUpdate, currentPicture, displayName, 
       );
 
       setSuccess('Profile picture updated successfully!');
+      
+      // Update local storage with new picture
+      const updatedUser = { ...user, profilePicture: base64Image };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      // Force update with callback
       if (onPictureUpdate) {
         onPictureUpdate(base64Image);
       }
 
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(''), 3000);
+      
+      // Clear file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     } catch (err) {
       console.error('Profile picture upload error:', err);
       const errorMsg =

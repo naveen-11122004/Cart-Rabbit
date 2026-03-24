@@ -60,7 +60,15 @@ const ProfilePanel = ({ user }) => {
   const cancelBio = () => setEditingBio(false);
 
   const handleProfilePictureUpdate = (newPicture) => {
+    // Force state update with new picture
     setProfilePicture(newPicture);
+    // Also update localStorage for persistence
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      const userObj = JSON.parse(userStr);
+      userObj.profilePicture = newPicture;
+      localStorage.setItem('user', JSON.stringify(userObj));
+    }
   };
 
   const joinedDate = user?.createdAt
@@ -78,6 +86,7 @@ const ProfilePanel = ({ user }) => {
         {profilePicture ? (
           <div className="profile-hero">
             <img
+              key={`profile-pic-${profilePicture.substring(0, 50)}`}
               src={profilePicture}
               alt="Profile"
               className="profile-avatar-lg-pic"

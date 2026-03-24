@@ -35,16 +35,15 @@ const ChatsPanel = ({ users, selectedUser, onSelectUser, lastMessages, unreadCou
       let hasChanges = false;
 
       for (const user of users) {
-        if (!newPictures[user._id]) {
-          try {
-            const response = await axios.get(`${API}/api/users/profile-picture?userId=${user._id}`);
-            if (response.data.profilePicture) {
-              newPictures[user._id] = response.data.profilePicture;
-              hasChanges = true;
-            }
-          } catch (err) {
-            // User might not have a profile picture, ignore error
+        try {
+          const response = await axios.get(`${API}/api/users/profile-picture?userId=${user._id}`);
+          if (response.data.profilePicture) {
+            // Always update in case picture changed
+            newPictures[user._id] = response.data.profilePicture;
+            hasChanges = true;
           }
+        } catch (err) {
+          // User might not have a profile picture, ignore error
         }
       }
 
@@ -54,6 +53,17 @@ const ChatsPanel = ({ users, selectedUser, onSelectUser, lastMessages, unreadCou
     };
 
     fetchProfilePicturesForUsers();
+
+    // Listen for storage changes (profile picture updates)
+    const handleStorageChange = (e) => {
+      if (e.key === 'user') {
+        // User data updated (including profile picture), refetch pictures
+        setTimeout(() => fetchProfilePicturesForUsers(), 100);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, [users]);
 
   const fetchLockedChats = async () => {
