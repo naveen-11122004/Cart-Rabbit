@@ -1,0 +1,186 @@
+.sticker-picker-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.sticker-picker-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);
+  width: 90%;
+  max-width: 400px;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+body.dark-mode .sticker-picker-container {
+  background: var(--bg-secondary, #1a1f2e);
+  color: var(--text-primary, #e1e8ed);
+}
+
+.picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e5ea;
+}
+
+body.dark-mode .picker-header {
+  border-bottom-color: var(--border-color, #38444d);
+}
+
+.picker-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+body.dark-mode .picker-header h3 {
+  color: var(--text-primary, #e1e8ed);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 4px 8px;
+  transition: color 0.2s;
+}
+
+.close-btn:hover {
+  color: #111827;
+}
+
+body.dark-mode .close-btn {
+  color: var(--text-secondary, #b0b8c1);
+}
+
+body.dark-mode .close-btn:hover {
+  color: var(--text-primary, #e1e8ed);
+}
+
+.sticker-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e5e5ea;
+  background: #f9fafb;
+}
+
+body.dark-mode .sticker-tabs {
+  background: var(--bg-primary, #0d1419);
+  border-bottom-color: var(--border-color, #38444d);
+}
+
+.sticker-tab {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s;
+  border-radius: 6px;
+}
+
+.sticker-tab:hover {
+  background: #e5e5ea;
+}
+
+.sticker-tab.active {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode .sticker-tab:hover {
+  background: var(--bg-tertiary, #222d3a);
+}
+
+body.dark-mode .sticker-tab.active {
+  background: var(--bg-secondary, #1a1f2e);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.stickers-grid {
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  padding: 12px;
+}
+
+.sticker-item {
+  aspect-ratio: 1;
+  padding: 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 32px;
+  transition: transform 0.2s;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sticker-item:hover {
+  transform: scale(1.2);
+  background: #f0f0f0;
+}
+
+body.dark-mode .sticker-item:hover {
+  background: var(--bg-tertiary, #222d3a);
+  transform: scale(1.2);
+}
+
+/* Scrollbar styling */
+.stickers-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.stickers-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.stickers-grid::-webkit-scrollbar-thumb {
+  background: #d1d1d6;
+  border-radius: 3px;
+}
+
+.stickers-grid::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a6;
+}
+
+body.dark-mode .stickers-grid::-webkit-scrollbar-thumb {
+  background: var(--border-color, #38444d);
+}
+
+body.dark-mode .stickers-grid::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+  .sticker-picker-container {
+    width: 95%;
+  }
+
+  .stickers-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}

@@ -171,6 +171,7 @@ const ChatWindow = ({
         onCancelReply={onCancelReply}
         editingMessage={editingMessage}
         onCancelEdit={onCancelEdit}
+        currentUserId={currentUser.userId}
       />
 
       <ScheduleCallModal 
