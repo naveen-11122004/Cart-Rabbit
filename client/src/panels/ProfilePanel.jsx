@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './Panel.css';
 import './ProfilePanel.css';
+import ProfilePictureUploader from '../components/ProfilePictureUploader';
 
 const MAX_BIO = 139;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 const ProfilePanel = ({ user }) => {
   const [displayName, setDisplayName] = useState(() =>
@@ -15,6 +18,30 @@ const ProfilePanel = ({ user }) => {
   const [editingBio, setEditingBio] = useState(false);
   const [tempName, setTempName] = useState('');
   const [tempBio, setTempBio] = useState('');
+  const [profilePicture, setProfilePicture] = useState(null);
+
+  // Fetch profile picture on mount
+  useEffect(() => {
+    const fetchProfilePicture = async () => {
+      try {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) return;
+
+        const userObj = JSON.parse(userStr);
+        const response = await axios.get(
+          `${API_BASE_URL}/users/profile-picture?userId=${userObj._id}`
+        );
+
+        if (response.data.profilePicture) {
+          setProfilePicture(response.data.profilePicture);
+        }
+      } catch (error) {
+        console.error('Failed to fetch profile picture:', error);
+      }
+    };
+
+    fetchProfilePicture();
+  }, [user]);
 
   const startEditName = () => { setTempName(displayName); setEditingName(true); };
   const saveName = () => {
@@ -32,6 +59,10 @@ const ProfilePanel = ({ user }) => {
   };
   const cancelBio = () => setEditingBio(false);
 
+  const handleProfilePictureUpdate = (newPicture) => {
+    setProfilePicture(newPicture);
+  };
+
   const joinedDate = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
     : null;
@@ -43,12 +74,33 @@ const ProfilePanel = ({ user }) => {
       </div>
 
       <div className="panel-body">
-        {/* Avatar hero */}
-        <div className="profile-hero">
-          <div className="profile-avatar-lg">
-            {(displayName || user?.username || 'U')[0].toUpperCase()}
+        {/* Avatar with profile picture uploader */}
+        {profilePicture ? (
+          <div className="profile-hero">
+            <img
+              src={profilePicture}
+              alt="Profile"
+              className="profile-avatar-lg-pic"
+              title={displayName || user?.username}
+            />
           </div>
-        </div>
+        ) : (
+          <div className="profile-hero">
+            <div className="profile-avatar-lg">
+              {(displayName || user?.username || 'U')[0].toUpperCase()}
+            </div>
+          </div>
+        )}
+
+        <hr className="panel-divider" />
+
+        {/* Profile picture uploader */}
+        <ProfilePictureUploader
+          currentPicture={profilePicture}
+          onPictureUpdate={handleProfilePictureUpdate}
+          displayName={displayName}
+          username={user?.username}
+        />
 
         <hr className="panel-divider" />
 

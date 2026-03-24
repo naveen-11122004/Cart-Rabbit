@@ -12,6 +12,8 @@ const {
   unlockChat,
   verifyChatLock,
   getLockedChats,
+  updateProfilePicture,
+  getProfilePicture,
 } = require('../controllers/userController');
 const authMiddleware = require('../middleware/authMiddleware');
 
@@ -33,5 +35,9 @@ router.post('/chat-lock', authMiddleware, lockChat);
 router.post('/chat-unlock', authMiddleware, unlockChat);
 router.post('/chat-verify-lock', authMiddleware, verifyChatLock);
 router.get('/locked-chats', authMiddleware, getLockedChats);
+
+// Profile picture routes (require authentication)
+router.post('/profile-picture', authMiddleware, updateProfilePicture);
+router.get('/profile-picture', getProfilePicture);
 
 module.exports = router;

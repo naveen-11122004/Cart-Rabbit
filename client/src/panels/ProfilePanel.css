@@ -20,6 +20,14 @@
   box-shadow: 0 4px 16px rgba(37,211,102,0.3);
 }
 
+.profile-avatar-lg-pic {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
 .profile-field {
   padding: 14px 20px;
   cursor: pointer;

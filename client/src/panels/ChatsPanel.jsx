@@ -19,11 +19,42 @@ const ChatsPanel = ({ users, selectedUser, onSelectUser, lastMessages, unreadCou
   const [showPINModal, setShowPINModal] = useState(false);
   const [selectedChatForLock, setSelectedChatForLock] = useState(null);
   const [verifiedChats, setVerifiedChats] = useState([]);
+  const [profilePictures, setProfilePictures] = useState({});
 
   // Fetch locked chats on mount
   useEffect(() => {
     fetchLockedChats();
   }, []);
+
+  // Fetch profile pictures for users
+  useEffect(() => {
+    const fetchProfilePicturesForUsers = async () => {
+      if (!users || users.length === 0) return;
+
+      const newPictures = { ...profilePictures };
+      let hasChanges = false;
+
+      for (const user of users) {
+        if (!newPictures[user._id]) {
+          try {
+            const response = await axios.get(`${API}/api/users/profile-picture?userId=${user._id}`);
+            if (response.data.profilePicture) {
+              newPictures[user._id] = response.data.profilePicture;
+              hasChanges = true;
+            }
+          } catch (err) {
+            // User might not have a profile picture, ignore error
+          }
+        }
+      }
+
+      if (hasChanges) {
+        setProfilePictures(newPictures);
+      }
+    };
+
+    fetchProfilePicturesForUsers();
+  }, [users]);
 
   const fetchLockedChats = async () => {
     try {
@@ -176,7 +207,11 @@ const ChatsPanel = ({ users, selectedUser, onSelectUser, lastMessages, unreadCou
                 className={`chats-item ${selectedUser?._id === u._id ? 'active' : ''}`}
                 onClick={() => handleSelectUser(u)}
               >
-                <UserAvatar username={u.username} size="md" />
+                <UserAvatar 
+                  username={u.username} 
+                  size="md" 
+                  profilePicture={profilePictures[u._id]}
+                />
                 <div className="chats-item-body">
                   <div className="chats-item-top">
                     <span className="chats-item-name">

@@ -51,6 +51,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: '#ffffff', // Fallback background color
     },
+    profilePicture: {
+      type: String,
+      default: null, // Base64 encoded image
+    },
     lockedChats: [
       {
         chatUserId: {

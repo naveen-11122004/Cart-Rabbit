@@ -369,3 +369,66 @@ exports.getLockedChats = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+// ─── Update Profile Picture ────────────────────────────────────────────────
+exports.updateProfilePicture = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized. Please login.' });
+    }
+
+    const { profilePicture } = req.body;
+
+    // Validate image data
+    if (!profilePicture) {
+      return res.status(400).json({ message: 'Profile picture data is required' });
+    }
+
+    if (!profilePicture.startsWith('data:image')) {
+      return res.status(400).json({ message: 'Invalid image format. Only Base64 encoded images are allowed.' });
+    }
+
+    // Check size (limit to 5MB)
+    const sizeInMB = Buffer.byteLength(profilePicture) / (1024 * 1024);
+    if (sizeInMB > 5) {
+      return res.status(400).json({ message: 'Image size must be less than 5MB' });
+    }
+
+    // Update user profile picture
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { profilePicture },
+      { new: true }
+    ).select('profilePicture username email');
+
+    res.status(200).json({
+      message: 'Profile picture updated successfully',
+      user,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// ─── Get Profile Picture ───────────────────────────────────────────────────
+exports.getProfilePicture = async (req, res) => {
+  try {
+    const userId = req.query.userId || req.user?.userId;
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+
+    const user = await User.findById(userId).select('profilePicture');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({
+      profilePicture: user.profilePicture,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};

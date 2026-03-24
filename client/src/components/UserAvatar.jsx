@@ -1,7 +1,7 @@
 import React from 'react';
 import './UserAvatar.css';
 
-const UserAvatar = ({ username, size = 'md' }) => {
+const UserAvatar = ({ username, size = 'md', profilePicture = null }) => {
   const initials = username
     .split(' ')
     .map((word) => word[0])
@@ -22,6 +22,19 @@ const UserAvatar = ({ username, size = 'md' }) => {
 
   const colorIndex = username.charCodeAt(0) % colors.length;
   const bgColor = colors[colorIndex];
+
+  if (profilePicture) {
+    return (
+      <div className={`avatar avatar-${size} avatar-image`}>
+        <img
+          src={profilePicture}
+          alt={username}
+          title={username}
+          className="avatar-img"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className={`avatar avatar-${size}`} style={{ backgroundColor: bgColor }}>
