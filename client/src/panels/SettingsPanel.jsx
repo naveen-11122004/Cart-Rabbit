@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Panel.css';
 import './SettingsPanel.css';
+import WallpaperPicker from '../components/WallpaperPicker';
 
 const SettingsPanel = ({ user }) => {
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('wa_dark') === 'true');
@@ -8,6 +9,8 @@ const SettingsPanel = ({ user }) => {
   const [notifications, setNotifications] = useState(() => localStorage.getItem('wa_notifications') !== 'false');
   const [sounds, setSounds] = useState(() => localStorage.getItem('wa_sounds') !== 'false');
   const [enterToSend, setEnterToSend] = useState(() => localStorage.getItem('wa_enter_send') === 'true');
+  const [showWallpaperPicker, setShowWallpaperPicker] = useState(false);
+  const [currentWallpaper, setCurrentWallpaper] = useState(null);
 
   // Apply dark mode
   useEffect(() => {
@@ -85,9 +88,21 @@ const SettingsPanel = ({ user }) => {
           </div>
         </div>
 
-        <hr className="panel-divider" />
+        <div className="settings-row">
+          <div className="settings-row-icon">🎨</div>
+          <div className="settings-row-body">
+            <span className="settings-row-title">Wallpaper</span>
+            <span className="settings-row-sub">Customize chat background</span>
+          </div>
+          <button 
+            className="settings-wallpaper-btn"
+            onClick={() => setShowWallpaperPicker(true)}
+          >
+            Change
+          </button>
+        </div>
 
-        {/* Notifications */}
+        <hr className="panel-divider" />
         <div className="panel-section-label">Notifications</div>
 
         <div className="settings-row">
@@ -135,6 +150,18 @@ const SettingsPanel = ({ user }) => {
           </div>
         </div>
       </div>
+
+      {/* Wallpaper Picker Modal */}
+      {showWallpaperPicker && (
+        <WallpaperPicker
+          currentWallpaper={currentWallpaper}
+          onSave={(wallpaperData) => {
+            setCurrentWallpaper(wallpaperData);
+            setShowWallpaperPicker(false);
+          }}
+          onClose={() => setShowWallpaperPicker(false)}
+        />
+      )}
     </div>
   );
 };

@@ -90,3 +90,53 @@
 .settings-about-app { font-size: 18px; font-weight: 700; color: #111b21; }
 .settings-about-version { font-size: 13px; color: #667781; }
 .settings-about-stack { font-size: 12px; color: #8696a0; line-height: 1.5; margin-top: 4px; }
+
+/* Wallpaper button styling */
+.settings-wallpaper-btn {
+  padding: 8px 16px;
+  background: #007bfc;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.settings-wallpaper-btn:hover {
+  background: #0056b3;
+  transform: scale(1.05);
+}
+
+.settings-wallpaper-btn:active {
+  transform: scale(0.98);
+}
+
+/* Dark mode support */
+body.dark-mode .settings-account-card:hover,
+body.dark-mode .settings-row:hover {
+  background: var(--bg-secondary, #1a1f2e);
+}
+
+body.dark-mode .settings-account-name,
+body.dark-mode .settings-row-title {
+  color: var(--text-primary, #e1e8ed);
+}
+
+body.dark-mode .settings-account-avatar {
+  background: #07c77c;
+}
+
+body.dark-mode .settings-row-icon {
+  background: var(--bg-tertiary, #222d3a);
+}
+
+body.dark-mode .settings-row-sub {
+  color: var(--text-secondary, #b0b8c1);
+}
+
+body.dark-mode .settings-about-app {
+  color: var(--text-primary, #e1e8ed);
+}
+

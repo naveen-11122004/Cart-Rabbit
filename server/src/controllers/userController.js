@@ -124,3 +124,93 @@ exports.getAllUsers = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+// ─── Update Wallpaper ──────────────────────────────────────────────────────
+exports.updateWallpaper = async (req, res) => {
+  try {
+    // Extract user ID from JWT token (set by middleware)
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized. Please login.' });
+    }
+
+    const { type, blur, presetId, css, url } = req.body;
+
+    // Validate inputs
+    if (!type || (type !== 'preset' && type !== 'upload')) {
+      return res.status(400).json({ message: 'Invalid wallpaper type' });
+    }
+
+    if (blur === undefined || blur < 0 || blur > 10) {
+      return res.status(400).json({ message: 'Blur must be between 0 and 10' });
+    }
+
+    // Build update object
+    const updateData = {
+      wallpaperBlur: blur,
+    };
+
+    if (type === 'preset') {
+      if (!css) {
+        return res.status(400).json({ message: 'Preset CSS is required' });
+      }
+      updateData.wallpaperUrl = css; // Store CSS value for preset
+      updateData.chatBackgroundColor = css;
+    } else if (type === 'upload') {
+      if (!url) {
+        return res.status(400).json({ message: 'Image URL is required' });
+      }
+      updateData.wallpaperUrl = url; // Store Base64 image URL
+      updateData.chatBackgroundColor = '#ffffff'; // Fallback color for uploaded images
+    }
+
+    // Update user document
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true }).select(
+      '_id username email wallpaperUrl wallpaperBlur chatBackgroundColor'
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({
+      message: 'Wallpaper updated successfully',
+      wallpaper: {
+        url: updatedUser.wallpaperUrl,
+        blur: updatedUser.wallpaperBlur,
+        backgroundColor: updatedUser.chatBackgroundColor,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// ─── Get Wallpaper ─────────────────────────────────────────────────────────
+exports.getWallpaper = async (req, res) => {
+  try {
+    // Extract user ID from JWT token (set by middleware)
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized. Please login.' });
+    }
+
+    const user = await User.findById(userId).select(
+      'wallpaperUrl wallpaperBlur chatBackgroundColor'
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({
+      wallpaper: {
+        url: user.wallpaperUrl,
+        blur: user.wallpaperBlur,
+        backgroundColor: user.chatBackgroundColor,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};

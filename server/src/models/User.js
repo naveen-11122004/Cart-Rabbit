@@ -37,6 +37,20 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    wallpaperUrl: {
+      type: String,
+      default: null, // Base64 encoded image or URL
+    },
+    wallpaperBlur: {
+      type: Number,
+      default: 0, // 0-10 blur intensity
+      min: 0,
+      max: 10,
+    },
+    chatBackgroundColor: {
+      type: String,
+      default: '#ffffff', // Fallback background color
+    },
   },
   { timestamps: true }
 );

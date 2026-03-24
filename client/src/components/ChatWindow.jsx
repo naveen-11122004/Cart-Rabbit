@@ -27,8 +27,32 @@ const ChatWindow = ({
 }) => {
   const [showCallMenu, setShowCallMenu] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [wallpaper, setWallpaper] = useState(null);
   const messagesEndRef = useRef(null);
   const callMenuRef = useRef(null);
+
+  // Fetch wallpaper on component mount
+  useEffect(() => {
+    const fetchWallpaper = async () => {
+      try {
+        // Get token from localStorage
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await axios.get(`${API}/api/users/wallpaper`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (response.data.wallpaper) {
+          setWallpaper(response.data.wallpaper);
+        }
+      } catch (err) {
+        console.log('Could not fetch wallpaper:', err.message);
+      }
+    };
+
+    fetchWallpaper();
+  }, [currentUser]);
 
   const handleSchedule = async (data) => {
     try {
@@ -134,7 +158,17 @@ const ChatWindow = ({
       </div>
 
       {/* Messages */}
-      <div className="messages-container">
+      <div 
+        className="messages-container"
+        style={wallpaper ? {
+          backgroundImage: wallpaper.url ? `url(${wallpaper.url})` : 'none',
+          backgroundColor: wallpaper.backgroundColor || '#ffffff',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+          filter: wallpaper.blur ? `blur(${wallpaper.blur}px)` : 'none'
+        } : {}}
+      >
         {messages.length === 0 ? (
           <div className="no-messages">
             <p>No messages yet.<br />Say hello! 👋</p>
