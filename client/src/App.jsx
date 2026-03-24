@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ChatPage from './pages/ChatPage';
@@ -29,20 +30,12 @@ const AppContent = () => (
 );
 
 function App() {
-  React.useEffect(() => {
-    // Apply initial settings from localStorage
-    const darkMode = localStorage.getItem('wa_dark') === 'true';
-    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
-
-    const fontSize = localStorage.getItem('wa_font_size') || 'medium';
-    const sizes = { small: '13px', medium: '15px', large: '17px' };
-    document.documentElement.style.setProperty('--chat-font-size', sizes[fontSize] || '15px');
-  }, []);
-
   return (
     <Router>
       <AuthProvider>
-        <AppContent />
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
       </AuthProvider>
     </Router>
   );

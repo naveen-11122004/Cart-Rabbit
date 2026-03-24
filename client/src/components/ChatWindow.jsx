@@ -40,11 +40,7 @@ const ChatWindow = ({
   };
 
   useEffect(() => {
-    // Scroll to top for newest messages (stack view)
-    const messagesContainer = document.querySelector('.messages-container');
-    if (messagesContainer) {
-      messagesContainer.scrollTop = 0;
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
@@ -144,7 +140,7 @@ const ChatWindow = ({
             <p>No messages yet.<br />Say hello! 👋</p>
           </div>
         ) : (
-          [...messages].reverse().map((msg) => (
+          messages.map((msg) => (
             <MessageBubble
               key={msg._id}
               message={msg}
