@@ -380,9 +380,27 @@ exports.updateProfilePicture = async (req, res) => {
 
     const { profilePicture } = req.body;
 
-    // Validate image data
+    // Allow null for removing picture or require data
+    if (profilePicture === null) {
+      // Remove profile picture
+      const user = await User.findByIdAndUpdate(
+        userId,
+        { profilePicture: null },
+        { new: true }
+      ).select('profilePicture username email');
+
+      return res.status(200).json({
+        message: 'Profile picture removed successfully',
+        user,
+      });
+    }
+
     if (!profilePicture) {
       return res.status(400).json({ message: 'Profile picture data is required' });
+    }
+
+    if (typeof profilePicture !== 'string') {
+      return res.status(400).json({ message: 'Profile picture must be a string' });
     }
 
     if (!profilePicture.startsWith('data:image')) {
@@ -399,15 +417,22 @@ exports.updateProfilePicture = async (req, res) => {
     const user = await User.findByIdAndUpdate(
       userId,
       { profilePicture },
-      { new: true }
+      { new: true, runValidators: true }
     ).select('profilePicture username email');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
     res.status(200).json({
       message: 'Profile picture updated successfully',
       user,
     });
   } catch (error) {
+    console.error('Profile picture update error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
   }
 };
 

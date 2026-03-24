@@ -20,7 +20,7 @@ const ProfilePanel = ({ user }) => {
   const [tempBio, setTempBio] = useState('');
   const [profilePicture, setProfilePicture] = useState(null);
 
-  // Fetch profile picture on mount
+  // Fetch profile picture on mount and when user changes
   useEffect(() => {
     const fetchProfilePicture = async () => {
       try {
@@ -28,12 +28,29 @@ const ProfilePanel = ({ user }) => {
         if (!userStr) return;
 
         const userObj = JSON.parse(userStr);
+        
+        // Log for debugging
+        console.log('Fetching profile picture for user:', userObj._id);
+
+        // Always fetch from server to ensure latest
         const response = await axios.get(
           `${API_BASE_URL}/users/profile-picture?userId=${userObj._id}`
         );
 
+        console.log('Profile picture response:', response.data);
+
         if (response.data.profilePicture) {
           setProfilePicture(response.data.profilePicture);
+          // Update localStorage with latest picture
+          userObj.profilePicture = response.data.profilePicture;
+          localStorage.setItem('user', JSON.stringify(userObj));
+        } else {
+          setProfilePicture(null);
+          // Clear picture from localStorage
+          if (userObj.profilePicture) {
+            userObj.profilePicture = null;
+            localStorage.setItem('user', JSON.stringify(userObj));
+          }
         }
       } catch (error) {
         console.error('Failed to fetch profile picture:', error);
@@ -41,7 +58,18 @@ const ProfilePanel = ({ user }) => {
     };
 
     fetchProfilePicture();
-  }, [user]);
+
+    // Listen for profile picture updates
+    const handleProfilePictureUpdate = (e) => {
+      if (e.key === 'user-profile-picture-updated') {
+        // Refetch picture after a short delay
+        setTimeout(() => fetchProfilePicture(), 500);
+      }
+    };
+
+    window.addEventListener('storage', handleProfilePictureUpdate);
+    return () => window.removeEventListener('storage', handleProfilePictureUpdate);
+  }, [user, user?._id]);
 
   const startEditName = () => { setTempName(displayName); setEditingName(true); };
   const saveName = () => {

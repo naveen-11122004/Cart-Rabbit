@@ -55,6 +55,8 @@ const ProfilePictureUploader = ({ onPictureUpdate, currentPicture, displayName, 
       const user = JSON.parse(userStr);
       const token = user.token;
 
+      console.log('Uploading profile picture, size:', (base64Image.length / 1024 / 1024).toFixed(2), 'MB');
+
       const response = await axios.post(
         `${API_BASE_URL}/users/profile-picture`,
         { profilePicture: base64Image },
@@ -66,16 +68,30 @@ const ProfilePictureUploader = ({ onPictureUpdate, currentPicture, displayName, 
         }
       );
 
+      console.log('Upload successful:', response.data);
+
       setSuccess('Profile picture updated successfully!');
       
-      // Update local storage with new picture
-      const updatedUser = { ...user, profilePicture: base64Image };
+      // Update local storage with response data (server-stored version)
+      const updatedUser = { ...user };
+      if (response.data.user?.profilePicture) {
+        updatedUser.profilePicture = response.data.user.profilePicture;
+      } else {
+        updatedUser.profilePicture = base64Image;
+      }
       localStorage.setItem('user', JSON.stringify(updatedUser));
       
       // Force update with callback
       if (onPictureUpdate) {
         onPictureUpdate(base64Image);
       }
+
+      // Dispatch storage event so other tabs/components know to refresh
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'user-profile-picture-updated',
+        newValue: base64Image,
+        storageArea: localStorage
+      }));
 
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(''), 3000);
