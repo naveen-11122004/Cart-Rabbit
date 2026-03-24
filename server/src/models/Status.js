@@ -8,9 +8,20 @@ const statusSchema = new mongoose.Schema({
   },
   text: {
     type: String,
-    required: true,
     maxlength: 139,
     trim: true,
+  },
+  audioData: {
+    type: String, // Base64 encoded audio
+    default: null,
+  },
+  videoData: {
+    type: String, // Base64 encoded video
+    default: null,
+  },
+  mediaType: {
+    type: String, // 'text', 'audio', 'video', 'text-audio', 'text-video'
+    default: 'text',
   },
   viewers: [
     {

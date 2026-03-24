@@ -8,32 +8,71 @@ const setIo = (io) => { _io = io; };
 // POST /api/status
 const postStatus = async (req, res) => {
   try {
-    const { userId, text } = req.body;
+    const { userId, text, audioData, videoData } = req.body;
 
-    if (!userId || !text || !text.trim()) {
-      return res.status(400).json({ message: 'userId and text are required' });
+    if (!userId) {
+      return res.status(400).json({ message: 'userId is required' });
     }
-    if (text.trim().length > 139) {
+
+    // At least one of text, audioData, or videoData must be provided
+    if (!text?.trim() && !audioData && !videoData) {
+      return res.status(400).json({ message: 'At least text, audio, or video is required' });
+    }
+
+    // Validate text length
+    if (text && text.trim().length > 139) {
       return res.status(400).json({ message: 'Status text must be 139 characters or fewer' });
+    }
+
+    // Validate audio size (max 5MB)
+    if (audioData) {
+      const audioSizeInBytes = Math.ceil(audioData.length * 0.75); // Base64 is ~33% larger
+      if (audioSizeInBytes > 5 * 1024 * 1024) {
+        return res.status(400).json({ message: 'Audio file too large (max 5MB)' });
+      }
+    }
+
+    // Validate video size (max 50MB)
+    if (videoData) {
+      const videoSizeInBytes = Math.ceil(videoData.length * 0.75);
+      if (videoSizeInBytes > 50 * 1024 * 1024) {
+        return res.status(400).json({ message: 'Video file too large (max 50MB)' });
+      }
     }
 
     const user = await User.findById(userId).select('username');
     if (!user) return res.status(404).json({ message: 'User not found' });
 
+    // Determine media type
+    let mediaType = 'text';
+    if (audioData && videoData) {
+      mediaType = 'text-video'; // video takes precedence
+    } else if (audioData) {
+      mediaType = 'text-audio';
+    } else if (videoData) {
+      mediaType = 'text-video';
+    }
+
     const status = await Status.create({
       userId,
-      text: text.trim(),
+      text: text?.trim() || null,
+      audioData: audioData || null,
+      videoData: videoData || null,
+      mediaType,
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });
 
     const payload = {
-      statusId:  status._id,
-      userId:    userId,
-      username:  user.username,
-      text:      status.text,
+      statusId: status._id,
+      userId: userId,
+      username: user.username,
+      text: status.text,
+      mediaType: status.mediaType,
+      hasAudio: !!status.audioData,
+      hasVideo: !!status.videoData,
       createdAt: status.createdAt,
       expiresAt: status.expiresAt,
-      viewers:   [],
+      viewers: [],
     };
 
     // Broadcast to ALL connected clients
@@ -44,7 +83,7 @@ const postStatus = async (req, res) => {
     return res.status(201).json({ message: 'Status posted', status: payload });
   } catch (err) {
     console.error('postStatus error:', err);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
 

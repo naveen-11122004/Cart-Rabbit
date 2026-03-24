@@ -339,3 +339,81 @@
 .status-nav-btn:hover { background: rgba(255,255,255,0.27); }
 .status-nav-btn.left  { left: -60px; }
 .status-nav-btn.right { right: -60px; }
+
+/* ── Media viewer content ────────────────────────────────────────── */
+
+.status-viewer-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  gap: 12px;
+}
+
+.status-viewer-media-container {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-viewer-audio {
+  width: 100%;
+  max-width: 320px;
+  height: 40px;
+  border-radius: 8px;
+}
+
+.status-viewer-video {
+  width: 100%;
+  max-width: 360px;
+  max-height: 500px;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
+/* ── Modal overlay ───────────────────────────────────────────────── */
+
+.status-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .status-viewer {
+    width: 90vw;
+    max-height: 90vh;
+  }
+  
+  .status-nav-btn.left  { left: -40px; }
+  .status-nav-btn.right { right: -40px; }
+  
+  .status-viewer-video {
+    max-width: 100%;
+    max-height: 400px;
+  }
+}

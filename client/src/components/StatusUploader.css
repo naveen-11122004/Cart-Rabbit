@@ -1,0 +1,290 @@
+.status-uploader {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 15px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.status-uploader-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px 15px 0 0;
+}
+
+.status-uploader-header h2 {
+  margin: 0;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.status-close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: white;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.status-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.status-uploader-content {
+  padding: 20px;
+  color: white;
+}
+
+/* Text Input Section */
+.text-input-section {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.status-text-input {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: none;
+  min-height: 80px;
+  transition: all 0.3s;
+}
+
+.status-text-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.status-text-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.text-counter {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: right;
+}
+
+/* Media Controls */
+.media-controls {
+  margin: 20px 0;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.media-controls h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.1rem;
+  color: white;
+}
+
+.media-section {
+  margin-bottom: 15px;
+}
+
+.media-section h4 {
+  margin: 0 0 10px 0;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.media-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-record,
+.btn-stop,
+.btn-upload,
+.btn-remove {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 500;
+}
+
+.btn-record {
+  background: #4CAF50;
+  color: white;
+}
+
+.btn-record:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+}
+
+.btn-stop {
+  background: #ff5252;
+  color: white;
+}
+
+.btn-stop:hover {
+  background: #ff1744;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 23, 68, 0.3);
+}
+
+.btn-upload {
+  background: #2196F3;
+  color: white;
+}
+
+.btn-upload:hover {
+  background: #0b7dda;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+}
+
+.btn-remove {
+  background: #ff9800;
+  color: white;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  margin-top: 10px;
+}
+
+.btn-remove:hover {
+  background: #f57c00;
+}
+
+.media-preview {
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+.media-preview audio,
+.media-preview video {
+  background: black;
+  border-radius: 5px;
+}
+
+/* Messages */
+.error-message {
+  padding: 12px 15px;
+  background: rgba(255, 82, 82, 0.2);
+  border-left: 4px solid #ff5252;
+  border-radius: 5px;
+  color: #ffcdd2;
+  margin: 15px 0;
+  font-size: 0.9rem;
+}
+
+.success-message {
+  padding: 12px 15px;
+  background: rgba(76, 175, 80, 0.2);
+  border-left: 4px solid #4CAF50;
+  border-radius: 5px;
+  color: #c8e6c9;
+  margin: 15px 0;
+  font-size: 0.9rem;
+}
+
+/* Footer Buttons */
+.status-uploader-footer {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-post-status,
+.btn-cancel {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-post-status {
+  background: white;
+  color: #667eea;
+}
+
+.btn-post-status:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.btn-post-status:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .status-uploader {
+    border-radius: 15px 15px 0 0;
+    max-height: 80vh;
+  }
+
+  .media-buttons {
+    flex-direction: column;
+  }
+
+  .btn-record,
+  .btn-stop,
+  .btn-upload {
+    width: 100%;
+  }
+
+  .status-uploader-footer {
+    flex-direction: column;
+  }
+}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import UserAvatar from '../components/UserAvatar';
+import StatusUploader from '../components/StatusUploader';
 import { getSocket } from '../utils/socket';
 import './Panel.css';
 import './StatusPanel.css';
@@ -23,18 +24,14 @@ const timeAgo = (dateStr) => {
 const StatusPanel = ({ currentUser }) => {
   // currentUser = { userId, username, email }
 
-  const [myStatuses, setMyStatuses]       = useState([]);
+  const [myStatuses, setMyStatuses]         = useState([]);
   const [othersStatuses, setOthersStatuses] = useState([]);
-  const [composing, setComposing]         = useState(false);
-  const [statusText, setStatusText]       = useState('');
-  const [posting, setPosting]             = useState(false);
-  const [viewingStatus, setViewingStatus] = useState(null);
+  const [showUploader, setShowUploader]     = useState(false);
+  const [viewingStatus, setViewingStatus]   = useState(null);
   // { user: { _id, username }, statuses: [], currentIndex: 0, isOwn: bool }
-  const [viewCounts, setViewCounts]       = useState({}); // statusId -> count
-  const [loading, setLoading]             = useState(true);
-  const [error, setError]                 = useState('');
-
-  const textareaRef = useRef(null);
+  const [viewCounts, setViewCounts]         = useState({}); // statusId -> count
+  const [loading, setLoading]               = useState(true);
+  const [error, setError]                   = useState('');
 
   // ── Fetch on mount ──────────────────────────────────────────────────────
 
@@ -71,7 +68,16 @@ const StatusPanel = ({ currentUser }) => {
         setMyStatuses(prev => {
           // Avoid duplicates
           if (prev.some(s => s._id === data.statusId || s.statusId === data.statusId)) return prev;
-          return [{ _id: data.statusId, text: data.text, createdAt: data.createdAt, expiresAt: data.expiresAt, viewers: [] }, ...prev];
+          return [{ 
+            _id: data.statusId, 
+            text: data.text, 
+            mediaType: data.mediaType,
+            hasAudio: data.hasAudio,
+            hasVideo: data.hasVideo,
+            createdAt: data.createdAt, 
+            expiresAt: data.expiresAt, 
+            viewers: [] 
+          }, ...prev];
         });
       } else {
         setOthersStatuses(prev => {
@@ -82,7 +88,16 @@ const StatusPanel = ({ currentUser }) => {
                 ? {
                     ...g,
                     statuses: [
-                      { _id: data.statusId, text: data.text, createdAt: data.createdAt, expiresAt: data.expiresAt, viewers: [] },
+                      { 
+                        _id: data.statusId, 
+                        text: data.text,
+                        mediaType: data.mediaType,
+                        hasAudio: data.hasAudio,
+                        hasVideo: data.hasVideo,
+                        createdAt: data.createdAt, 
+                        expiresAt: data.expiresAt, 
+                        viewers: [] 
+                      },
                       ...g.statuses,
                     ],
                   }
@@ -92,7 +107,16 @@ const StatusPanel = ({ currentUser }) => {
           return [
             {
               user: { _id: data.userId, username: data.username },
-              statuses: [{ _id: data.statusId, text: data.text, createdAt: data.createdAt, expiresAt: data.expiresAt, viewers: [] }],
+              statuses: [{ 
+                _id: data.statusId, 
+                text: data.text,
+                mediaType: data.mediaType,
+                hasAudio: data.hasAudio,
+                hasVideo: data.hasVideo,
+                createdAt: data.createdAt, 
+                expiresAt: data.expiresAt, 
+                viewers: [] 
+              }],
             },
             ...prev,
           ];
@@ -129,26 +153,6 @@ const StatusPanel = ({ currentUser }) => {
       socket.off('statusDeleted', handleStatusDeleted);
     };
   }, [currentUser?.userId]);
-
-  // ── Post status ─────────────────────────────────────────────────────────
-
-  const handlePost = async () => {
-    if (!statusText.trim() || posting) return;
-    try {
-      setPosting(true);
-      await axios.post(`${API}/api/status`, {
-        userId: currentUser.userId,
-        text: statusText.trim(),
-      });
-      setStatusText('');
-      setComposing(false);
-    } catch (err) {
-      console.error('Failed to post status', err);
-      setError('Failed to post status');
-    } finally {
-      setPosting(false);
-    }
-  };
 
   // ── Delete status ───────────────────────────────────────────────────────
 
@@ -228,7 +232,7 @@ const StatusPanel = ({ currentUser }) => {
         <button
           className="panel-icon-btn"
           title="New status"
-          onClick={() => { setComposing(true); setTimeout(() => textareaRef.current?.focus(), 50); }}
+          onClick={() => setShowUploader(true)}
         >
           <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
             <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
@@ -276,7 +280,7 @@ const StatusPanel = ({ currentUser }) => {
           </div>
           <button
             className="status-compose-btn"
-            onClick={e => { e.stopPropagation(); setComposing(true); setTimeout(() => textareaRef.current?.focus(), 50); }}
+            onClick={e => { e.stopPropagation(); setShowUploader(true); }}
             title="Add status"
           >
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
@@ -285,37 +289,17 @@ const StatusPanel = ({ currentUser }) => {
           </button>
         </div>
 
-        {/* ── Compose box ── */}
-        {composing && (
-          <div className="status-compose-box">
-            <textarea
-              ref={textareaRef}
-              className="status-compose-input"
-              placeholder="Type a status… (max 139 chars)"
-              value={statusText}
-              onChange={e => setStatusText(e.target.value.slice(0, MAX_CHARS))}
-              rows={3}
+        {/* ── Status Uploader Modal ── */}
+        {showUploader && (
+          <div className="status-modal-overlay">
+            <StatusUploader
+              userId={currentUser.userId}
+              onStatusPosted={() => {
+                setShowUploader(false);
+                // Statuses will be updated via Socket.io
+              }}
+              onClose={() => setShowUploader(false)}
             />
-            <div className="status-compose-footer">
-              <span className={`status-char-count ${statusText.length >= MAX_CHARS ? 'limit' : ''}`}>
-                {MAX_CHARS - statusText.length}
-              </span>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button
-                  className="panel-btn-ghost"
-                  onClick={() => { setComposing(false); setStatusText(''); }}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="panel-btn-primary"
-                  onClick={handlePost}
-                  disabled={!statusText.trim() || posting}
-                >
-                  {posting ? 'Posting…' : 'Post'}
-                </button>
-              </div>
-            </div>
           </div>
         )}
 
@@ -358,9 +342,11 @@ const StatusPanel = ({ currentUser }) => {
                 <div className="status-row-body">
                   <span className="status-row-name">{group.user.username}</span>
                   <span className="status-row-sub">
+                    {latestStatus?.mediaType?.includes('video') && '🎥 '}
+                    {latestStatus?.mediaType?.includes('audio') && !latestStatus?.mediaType?.includes('video') && '🎤 '}
                     {latestStatus?.text?.length > 40
                       ? latestStatus.text.slice(0, 40) + '…'
-                      : latestStatus?.text}
+                      : latestStatus?.text || '(Media only)'}
                     {latestStatus && (
                       <span className="status-row-time"> · {timeAgo(latestStatus.createdAt)}</span>
                     )}
@@ -404,9 +390,33 @@ const StatusPanel = ({ currentUser }) => {
               <button className="status-viewer-close" onClick={closeViewer}>✕</button>
             </div>
 
-            {/* Status text */}
-            <div className="status-viewer-text">
-              {currentViewerStatus?.text}
+            {/* Status content: Text + Media */}
+            <div className="status-viewer-content">
+              {currentViewerStatus?.text && (
+                <div className="status-viewer-text">
+                  {currentViewerStatus.text}
+                </div>
+              )}
+              
+              {currentViewerStatus?.audioData && (
+                <div className="status-viewer-media-container">
+                  <audio
+                    controls
+                    src={`data:audio/webm;base64,${currentViewerStatus.audioData}`}
+                    className="status-viewer-audio"
+                  />
+                </div>
+              )}
+              
+              {currentViewerStatus?.videoData && (
+                <div className="status-viewer-media-container">
+                  <video
+                    controls
+                    src={`data:video/webm;base64,${currentViewerStatus.videoData}`}
+                    className="status-viewer-video"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Footer: view count or viewer list */}
