@@ -221,15 +221,14 @@ exports.resendOtp = async (req, res) => {
     user.otpPurpose = purpose;
     await user.save();
 
-    try {
-      await sendOtpEmail(email, otp, purpose);
-    } catch (emailError) {
+    // Send email in background — don't wait for it (non-blocking)
+    sendOtpEmail(email, otp, purpose).catch((emailError) => {
       console.log('\n❌ ============================================= ❌');
       console.log('EMAIL FAILED: Your local Antivirus or Firewall is blocking node.exe from sending emails.');
       console.log(`Don't worry! Use this new OTP to verify your account right now:`);
       console.log(`👉 RESENT OTP for ${email}: ${otp} 👈`);
       console.log('❌ ============================================= ❌\n');
-    }
+    });
 
     res.status(200).json({ message: 'New OTP sent to your email.' });
   } catch (error) {
