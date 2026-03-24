@@ -5,7 +5,7 @@ import './ProfilePanel.css';
 import ProfilePictureUploader from '../components/ProfilePictureUploader';
 
 const MAX_BIO = 139;
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const ProfilePanel = ({ user }) => {
   const [displayName, setDisplayName] = useState(() =>
@@ -34,7 +34,7 @@ const ProfilePanel = ({ user }) => {
 
         // Always fetch from server to ensure latest
         const response = await axios.get(
-          `${API_BASE_URL}/users/profile-picture?userId=${userObj._id}`
+          `${API}/api/users/profile-picture?userId=${userObj._id}`
         );
 
         console.log('Profile picture response:', response.data);

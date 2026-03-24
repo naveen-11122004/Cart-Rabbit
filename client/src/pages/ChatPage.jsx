@@ -76,11 +76,21 @@ const ChatPage = () => {
 
   // Fetch all users
   useEffect(() => {
-    if (!user?.userId) return;
+    if (!user?.userId) {
+      console.log('Skipping user fetch: user not ready', { user });
+      return;
+    }
+    console.log('Fetching users for:', user.userId, 'API URL:', API);
     axios
       .get(`${API}/api/users?currentUserId=${user.userId}`)
-      .then(res => setUsers(res.data.users))
-      .catch(() => setError('Failed to fetch users'));
+      .then(res => {
+        console.log('Users fetched successfully:', res.data);
+        setUsers(res.data.users);
+      })
+      .catch(err => {
+        console.error('Failed to fetch users:', err.message, err.response?.data);
+        setError('Failed to fetch users: ' + (err.response?.data?.message || err.message));
+      });
   }, [user?.userId]);
 
   // Ask for notification permission
