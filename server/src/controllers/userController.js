@@ -59,16 +59,15 @@ exports.register = async (req, res) => {
     });
     await user.save();
 
-    try {
-      await sendOtpEmail(email, otp, 'registration');
-    } catch (emailError) {
+    // Send email in background — don't wait for it (non-blocking)
+    sendOtpEmail(email, otp, 'registration').catch((emailError) => {
       console.log('\n❌ ============================================= ❌');
       console.log('EMAIL FAILED: Your local Antivirus or Firewall is blocking node.exe from sending emails.');
       console.log(`Don't worry! Use this OTP to verify your account right now:`);
       console.log(`👉 OTP for ${email}: ${otp} 👈`);
       console.log('❌ ============================================= ❌\n');
       // Continue — user was saved; they can still verify with the OTP shown in server logs
-    }
+    });
 
     res.status(201).json({
       message: 'OTP sent to your email. Please verify to complete registration.',
@@ -147,16 +146,14 @@ exports.login = async (req, res) => {
     user.otpPurpose = 'login';
     await user.save();
 
-    try {
-      await sendOtpEmail(email, otp, 'login');
-    } catch (emailError) {
+    // Send email in background — don't wait for it (non-blocking)
+    sendOtpEmail(email, otp, 'login').catch((emailError) => {
       console.log('\n❌ ============================================= ❌');
       console.log('EMAIL FAILED: Your local Antivirus or Firewall is blocking node.exe from sending emails.');
       console.log(`Don't worry! Use this OTP to verify your account right now:`);
       console.log(`👉 OTP for ${email}: ${otp} 👈`);
       console.log('❌ ============================================= ❌\n');
-      // Continue — still respond success; OTP is visible in server console
-    }
+    });
 
     res.status(200).json({
       message: 'OTP sent to your email. Please verify to complete login.',
