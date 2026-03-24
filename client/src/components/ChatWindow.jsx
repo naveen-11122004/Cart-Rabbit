@@ -165,8 +165,7 @@ const ChatWindow = ({
           backgroundColor: wallpaper.backgroundColor || '#ffffff',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-          filter: wallpaper.blur ? `blur(${wallpaper.blur}px)` : 'none'
+          backgroundAttachment: 'fixed'
         } : {}}
       >
         {messages.length === 0 ? (
