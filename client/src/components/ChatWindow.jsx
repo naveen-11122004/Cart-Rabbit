@@ -11,7 +11,8 @@ const ChatWindow = ({
   messages, 
   selectedUser, 
   onSendMessage, 
-  onSendFile, 
+  onSendFile,
+  onSendAudio,
   isLoading, 
   currentUser, 
   onStartCall,
@@ -201,6 +202,7 @@ const ChatWindow = ({
       <MessageInput
         onSendMessage={onSendMessage}
         onSendFile={onSendFile}
+        onSendAudio={onSendAudio}
         isLoading={isLoading}
         replyingToMessage={replyingToMessage}
         onCancelReply={onCancelReply}

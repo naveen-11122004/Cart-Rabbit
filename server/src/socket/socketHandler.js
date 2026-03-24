@@ -10,10 +10,14 @@ const socketHandler = (io) => {
   io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
+    // Store current user ID for this socket
+    let currentUserId = null;
+
     // User joins their own room
     socket.on('join', (userId) => {
       socket.join(userId);
       activeUsers.set(userId, socket.id);
+      currentUserId = userId;
       console.log(`User ${userId} joined room with socket ${socket.id}`);
     });
 
@@ -104,6 +108,31 @@ const socketHandler = (io) => {
     socket.on('endCall', ({ receiverId }) => {
       io.to(receiverId).emit('callEnded', { senderId: socket.id });
       console.log(`Call ended between ${socket.id} and ${receiverId}`);
+    });
+
+    // ============== AUDIO MESSAGE (REAL-TIME) ==============
+    socket.on('sendAudio', ({ receiverId, audio, mimeType, timestamp }, callback) => {
+      try {
+        // Send audio directly to receiver without storing
+        io.to(receiverId).emit('receiveAudio', {
+          senderId: currentUserId,
+          audio,
+          mimeType,
+          timestamp,
+        });
+
+        // Acknowledge to sender
+        if (callback && typeof callback === 'function') {
+          callback({ success: true });
+        }
+
+        console.log(`Audio message sent from ${currentUserId} to ${receiverId}`);
+      } catch (error) {
+        console.error('Error sending audio:', error);
+        if (callback && typeof callback === 'function') {
+          callback({ success: false, error: error.message });
+        }
+      }
     });
 
     // Handle disconnection

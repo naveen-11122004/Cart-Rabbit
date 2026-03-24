@@ -19,7 +19,8 @@ const SVGIcon = ({ d, viewBox = "0 0 24 24", fill = "currentColor", size = 24 })
 
 const MessageInput = ({ 
   onSendMessage, 
-  onSendFile, 
+  onSendFile,
+  onSendAudio,
   isLoading,
   replyingToMessage,
   onCancelReply,
@@ -117,7 +118,9 @@ const MessageInput = ({
   };
 
   const handleAudioSend = (audioBlob) => {
-    onSendFile(audioBlob, 'audio');
+    if (onSendAudio) {
+      onSendAudio(audioBlob);
+    }
     setShowAudioRecorder(false);
   };
 

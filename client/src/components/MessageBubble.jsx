@@ -111,6 +111,20 @@ const MessageBubble = ({
       }
     }
 
+    // Audio message - Real-time audio streaming
+    if (messageType === 'audio' && message.audioData) {
+      return (
+        <div className="file-content audio-content">
+          <audio 
+            src={message.audioData} 
+            controls 
+            className="msg-audio"
+            controlsList="nodownload"
+          />
+        </div>
+      );
+    }
+
     if (file && file.mimetype) {
       const fileUrl = `${API}/api/messages/file/${_id}`;
       const { mimetype, filename } = file;

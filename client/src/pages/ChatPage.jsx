@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { connectSocket, getSocket, disconnectSocket } from '../utils/socket';
+import { connectSocket, getSocket, disconnectSocket, sendAudioMessage } from '../utils/socket';
 import { sendFileMessage } from '../utils/fileUpload';
 import NavRail from '../components/NavRail';
 import ChatWindow from '../components/ChatWindow';
@@ -227,8 +227,54 @@ const ChatPage = () => {
       setError(message || 'User is offline or unavailable');
     });
 
+    socket.on('receiveAudio', ({ senderId, audio, mimeType, timestamp }) => {
+      try {
+        // Create audio data URL from Base64
+        const audioDataUrl = `data:${mimeType};base64,${audio}`;
+
+        const audioMessage = {
+          _id: Date.now(),
+          senderId: { _id: senderId },
+          receiverId: { _id: user.userId },
+          content: '🎵 Audio Message',
+          messageType: 'audio',
+          audioData: audioDataUrl,
+          mimeType: mimeType,
+          createdAt: timestamp,
+        };
+
+        setMessages(prev => [...prev, audioMessage]);
+
+        // Update last messages
+        const senderUser = users.find(u => u._id === senderId);
+        const senderName = senderUser?.username || 'New message';
+        setLastMessages(prev => ({
+          ...prev,
+          [senderId]: '🎵 Audio message',
+        }));
+
+        // Toast notification
+        const toastId = Date.now();
+        setToastNotifications(prev => [...prev, {
+          id: toastId,
+          message: '🎵 Audio message',
+          sender: senderName
+        }]);
+
+        // Browser notification
+        if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
+          new Notification('New Audio Message', {
+            body: `${senderName} sent you an audio message`,
+          });
+        }
+      } catch (err) {
+        console.error('Error processing audio message:', err);
+      }
+    });
+
     return () => {
       socket.off('receiveMessage');
+      socket.off('receiveAudio');
       socket.off('incomingCall');
       socket.off('callAccepted');
       socket.off('receiveOffer');
@@ -426,6 +472,44 @@ const ChatPage = () => {
     }
   };
 
+  // Handle audio message - send via socket without file upload
+  const handleAudioSend = async audioBlob => {
+    if (!selectedUser || !user?.userId) {
+      setError('Please select a user first');
+      return;
+    }
+    setFileLoading(true);
+    try {
+      await sendAudioMessage(selectedUser._id, audioBlob);
+      
+      // Create local audio message to display
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const audioMessage = {
+          _id: Date.now(),
+          senderId: { _id: user.userId },
+          receiverId: { _id: selectedUser._id },
+          content: '🎵 Audio Message',
+          messageType: 'audio',
+          audioData: e.target.result,
+          mimeType: audioBlob.type || 'audio/webm',
+          createdAt: new Date(),
+        };
+        setMessages(prev => [...prev, audioMessage]);
+        setLastMessages(prev => ({
+          ...prev,
+          [selectedUser._id]: '🎵 Audio message',
+        }));
+      };
+      reader.readAsDataURL(audioBlob);
+    } catch (err) {
+      console.error('Audio send error:', err);
+      setError(err.message || 'Failed to send audio message');
+    } finally {
+      setFileLoading(false);
+    }
+  };
+
   const handleEditMessage = (message) => setEditingMessage(message);
   const handleDeleteMessage = (messageId) => setDeleteMessageData(messageId);
   const handleReplyMessage = (message) => setReplyingToMessage(message);
@@ -552,6 +636,7 @@ const ChatPage = () => {
           selectedUser={selectedUser}
           onSendMessage={handleSendMessage}
           onSendFile={handleSendFile}
+          onSendAudio={handleAudioSend}
           isLoading={loading || fileLoading}
           currentUser={user}
           onStartCall={handleStartCall}

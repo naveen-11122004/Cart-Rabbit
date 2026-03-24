@@ -41,3 +41,35 @@ export const disconnectSocket = () => {
 };
 
 export const getSocket = () => socket;
+
+// Send audio through socket (real-time, no storage)
+export const sendAudioMessage = (receiverId, audioBlob, onProgress) => {
+  const socket = getSocket();
+  if (!socket) return Promise.reject('Not connected');
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const arrayBuffer = reader.result;
+      const base64Audio = btoa(
+        String.fromCharCode.apply(null, new Uint8Array(arrayBuffer))
+      );
+
+      socket.emit('sendAudio', {
+        receiverId,
+        audio: base64Audio,
+        mimeType: audioBlob.type || 'audio/webm',
+        timestamp: new Date(),
+      }, (response) => {
+        if (response?.success) {
+          resolve(response);
+        } else {
+          reject(response?.error || 'Failed to send audio');
+        }
+      });
+    };
+    reader.onerror = () => reject('Failed to read audio blob');
+    reader.readAsArrayBuffer(audioBlob);
+  });
+};
+
