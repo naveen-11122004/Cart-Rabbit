@@ -7,6 +7,7 @@ import { sendFileMessage } from '../utils/fileUpload';
 import NavRail from '../components/NavRail';
 import ChatWindow from '../components/ChatWindow';
 import CallModal from '../components/CallModal';
+import Toast from '../components/Toast';
 
 // Panels
 import ChatsPanel from '../panels/ChatsPanel';
@@ -43,6 +44,9 @@ const ChatPage = () => {
   const [loading, setLoading] = useState(false);
   const [fileLoading, setFileLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Toast notifications
+  const [toastNotifications, setToastNotifications] = useState([]);
 
   // Message Actions state
   const [replyingToMessage, setReplyingToMessage] = useState(null);
@@ -108,6 +112,19 @@ const ChatPage = () => {
         createdAt: messageData.timestamp,
       };
       setMessages(prev => [...prev, incoming]);
+      
+      // Get sender username from users list
+      const senderUser = users.find(u => u._id === messageData.senderId);
+      const senderName = senderUser?.username || 'New message';
+      
+      // Show toast notification
+      const toastId = Date.now();
+      setToastNotifications(prev => [...prev, {
+        id: toastId,
+        message: messageData.file ? `📎 ${messageData.file.filename || 'File'}` : messageData.content,
+        sender: senderName
+      }]);
+
       const peerId = messageData.senderId === user.userId ? messageData.receiverId : messageData.senderId;
       setLastMessages(prev => ({
         ...prev,
@@ -602,6 +619,18 @@ const ChatPage = () => {
           <button onClick={() => setError('')}>✕</button>
         </div>
       )}
+
+      {/* Message toasts */}
+      {toastNotifications.map(toast => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          sender={toast.sender}
+          onClose={() => {
+            setToastNotifications(prev => prev.filter(t => t.id !== toast.id));
+          }}
+        />
+      ))}
     </div>
   );
 };
