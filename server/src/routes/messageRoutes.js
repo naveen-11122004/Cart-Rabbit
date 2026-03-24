@@ -15,16 +15,21 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB
   fileFilter: (req, file, cb) => {
     const allowed = [
+      // Images
       'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+      // Videos
       'video/mp4', 'video/quicktime',
+      // Documents
       'application/pdf',
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'application/zip',
       'text/plain',
+      // Audio
+      'audio/webm', 'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/aac', 'audio/mp4',
     ];
     if (allowed.includes(file.mimetype)) cb(null, true);
-    else cb(new Error('Unsupported file type'));
+    else cb(new Error(`Unsupported file type: ${file.mimetype}`));
   },
 });
 
