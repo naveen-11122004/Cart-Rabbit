@@ -31,7 +31,10 @@ const ChatsPanel = ({ users, selectedUser, onSelectUser, lastMessages, unreadCou
   const sorted = [...users].sort((a, b) => {
     const ap = pinned.includes(a._id) ? 1 : 0;
     const bp = pinned.includes(b._id) ? 1 : 0;
-    return bp - ap;
+    if (ap !== bp) return bp - ap; // Pinned first
+    const timeA = lastMessages[a._id]?.timestamp ? new Date(lastMessages[a._id].timestamp).getTime() : 0;
+    const timeB = lastMessages[b._id]?.timestamp ? new Date(lastMessages[b._id].timestamp).getTime() : 0;
+    return timeB - timeA; // Most recent first
   });
 
   const filtered = sorted.filter(u => {
@@ -100,7 +103,7 @@ const ChatsPanel = ({ users, selectedUser, onSelectUser, lastMessages, unreadCou
           </div>
         ) : (
           filtered.map(u => {
-            const lastMsg = lastMessages[u._id] || '';
+            const lastMsg = lastMessages[u._id]?.text || '';
             const unread = unreadCounts[u._id] || 0;
             const isPinned = pinned.includes(u._id);
             return (
