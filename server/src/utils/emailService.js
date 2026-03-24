@@ -17,9 +17,11 @@ const transporter = nodemailer.createTransport({
   socketTimeout: 10000,
 });
 
-// Verify configuration on startup (optional but helpful for dev)
-if (!process.env.GMAIL_USER) {
-  console.warn('⚠️ GMAIL_USER is not defined in .env file. Email service will not work.');
+// Verify configuration on startup
+if (!process.env.GMAIL_USER || !process.env.GMAIL_PASSWORD) {
+  console.warn('⚠️ GMAIL_USER or GMAIL_PASSWORD is not defined. Email service will not work.');
+  console.warn('  GMAIL_USER:', process.env.GMAIL_USER ? '✓ Set' : '✗ Missing');
+  console.warn('  GMAIL_PASSWORD:', process.env.GMAIL_PASSWORD ? '✓ Set' : '✗ Missing');
 }
 
 exports.sendOtpEmail = async (email, otp, purpose) => {
