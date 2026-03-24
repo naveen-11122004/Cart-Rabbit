@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const { sendWelcomeEmail } = require('../utils/emailService');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
 // ─── Helper ────────────────────────────────────────────────────────────────
 const generateToken = (userId) => {
@@ -116,11 +117,17 @@ exports.getAllUsers = async (req, res) => {
     if (!currentUserId)
       return res.status(400).json({ message: 'Current user ID is required' });
 
-    const users = await User.find({ _id: { $ne: currentUserId } }).select(
+    // Validate that currentUserId is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(currentUserId)) {
+      return res.status(400).json({ message: 'Invalid user ID format' });
+    }
+
+    const users = await User.find({ _id: { $ne: new mongoose.Types.ObjectId(currentUserId) } }).select(
       '_id username email'
     );
     res.status(200).json({ users });
   } catch (error) {
+    console.error('Get all users error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
