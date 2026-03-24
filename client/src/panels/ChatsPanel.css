@@ -144,3 +144,17 @@
   padding: 2px;
 }
 .chats-item:hover .chats-pin-btn { opacity: 1; }
+
+.chats-lock-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  padding: 2px;
+}
+.chats-item:hover .chats-lock-btn { opacity: 1; }
+.chats-lock {
+  margin-right: 4px;
+}

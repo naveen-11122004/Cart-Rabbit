@@ -214,3 +214,158 @@ exports.getWallpaper = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+// ─── Lock Chat ─────────────────────────────────────────────────────────────
+const bcrypt = require('bcryptjs');
+
+exports.lockChat = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized. Please login.' });
+    }
+
+    const { chatUserId, pin } = req.body;
+
+    // Validate inputs
+    if (!chatUserId || !pin) {
+      return res.status(400).json({ message: 'Chat user ID and PIN are required' });
+    }
+
+    if (pin.length < 4 || pin.length > 6) {
+      return res.status(400).json({ message: 'PIN must be between 4-6 digits' });
+    }
+
+    // Hash PIN
+    const hashedPin = await bcrypt.hash(pin, 10);
+
+    // Check if chat is already locked
+    const user = await User.findById(userId);
+    const existingLock = user.lockedChats.find(
+      (lock) => lock.chatUserId.toString() === chatUserId
+    );
+
+    if (existingLock) {
+      // Update existing lock
+      existingLock.pin = hashedPin;
+      existingLock.lockedAt = new Date();
+    } else {
+      // Add new lock
+      user.lockedChats.push({
+        chatUserId,
+        pin: hashedPin,
+        lockedAt: new Date(),
+      });
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      message: 'Chat locked successfully',
+      locked: true,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// ─── Unlock Chat ───────────────────────────────────────────────────────────
+exports.unlockChat = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized. Please login.' });
+    }
+
+    const { chatUserId, pin } = req.body;
+
+    if (!chatUserId || !pin) {
+      return res.status(400).json({ message: 'Chat user ID and PIN are required' });
+    }
+
+    const user = await User.findById(userId);
+    const lockIndex = user.lockedChats.findIndex(
+      (lock) => lock.chatUserId.toString() === chatUserId
+    );
+
+    if (lockIndex === -1) {
+      return res.status(404).json({ message: 'Chat is not locked' });
+    }
+
+    // Verify PIN
+    const isMatch = await bcrypt.compare(pin, user.lockedChats[lockIndex].pin);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Incorrect PIN' });
+    }
+
+    // Remove lock
+    user.lockedChats.splice(lockIndex, 1);
+    await user.save();
+
+    res.status(200).json({
+      message: 'Chat unlocked successfully',
+      locked: false,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// ─── Verify Chat Lock ──────────────────────────────────────────────────────
+exports.verifyChatLock = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized. Please login.' });
+    }
+
+    const { chatUserId, pin } = req.body;
+
+    if (!chatUserId || !pin) {
+      return res.status(400).json({ message: 'Chat user ID and PIN are required' });
+    }
+
+    const user = await User.findById(userId);
+    const lock = user.lockedChats.find(
+      (lock) => lock.chatUserId.toString() === chatUserId
+    );
+
+    if (!lock) {
+      return res.status(404).json({ message: 'Chat is not locked' });
+    }
+
+    // Verify PIN
+    const isMatch = await bcrypt.compare(pin, lock.pin);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Incorrect PIN' });
+    }
+
+    res.status(200).json({
+      message: 'PIN verified',
+      verified: true,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// ─── Get Locked Chats ──────────────────────────────────────────────────────
+exports.getLockedChats = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized. Please login.' });
+    }
+
+    const user = await User.findById(userId).select('lockedChats');
+    
+    // Return only the chat user IDs (not the PINs)
+    const lockedChatIds = user.lockedChats.map((lock) => lock.chatUserId.toString());
+
+    res.status(200).json({
+      lockedChats: lockedChatIds,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};

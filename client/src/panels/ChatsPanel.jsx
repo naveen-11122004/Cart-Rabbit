@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 import UserAvatar from '../components/UserAvatar';
+import ChatLockModal from '../components/ChatLockModal';
+import PINVerificationModal from '../components/PINVerificationModal';
 import './Panel.css';
 import './ChatsPanel.css';
+
+const API = import.meta.env.VITE_API_URL;
 
 const ChatsPanel = ({ users, selectedUser, onSelectUser, lastMessages, unreadCounts = {} }) => {
   const [search, setSearch] = useState('');
@@ -9,6 +14,32 @@ const ChatsPanel = ({ users, selectedUser, onSelectUser, lastMessages, unreadCou
   const [pinned, setPinned] = useState(() => {
     try { return JSON.parse(localStorage.getItem('wa_pinned') || '[]'); } catch { return []; }
   });
+  const [lockedChats, setLockedChats] = useState([]);
+  const [showLockModal, setShowLockModal] = useState(false);
+  const [showPINModal, setShowPINModal] = useState(false);
+  const [selectedChatForLock, setSelectedChatForLock] = useState(null);
+  const [verifiedChats, setVerifiedChats] = useState([]);
+
+  // Fetch locked chats on mount
+  useEffect(() => {
+    fetchLockedChats();
+  }, []);
+
+  const fetchLockedChats = async () => {
+    try {
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      const token = userData.token;
+      if (!token) return;
+
+      const response = await axios.get(`${API}/api/users/locked-chats`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setLockedChats(response.data.lockedChats || []);
+    } catch (err) {
+      console.log('Could not fetch locked chats:', err.message);
+    }
+  };
 
   // Persist pinned
   useEffect(() => {
@@ -20,6 +51,39 @@ const ChatsPanel = ({ users, selectedUser, onSelectUser, lastMessages, unreadCou
     setPinned(prev =>
       prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]
     );
+  };
+
+  const handleLockClick = (e, user) => {
+    e.stopPropagation();
+    setSelectedChatForLock(user);
+    setShowLockModal(true);
+  };
+
+  const handleSelectUser = (user) => {
+    const isChatLocked = lockedChats.includes(user._id);
+    const isVerified = verifiedChats.includes(user._id);
+
+    if (isChatLocked && !isVerified) {
+      setSelectedChatForLock(user);
+      setShowPINModal(true);
+    } else {
+      onSelectUser(user);
+    }
+  };
+
+  const handleChatLocked = (isLocked) => {
+    if (isLocked) {
+      setLockedChats(prev => [...new Set([...prev, selectedChatForLock._id])]);
+    } else {
+      setLockedChats(prev => prev.filter(id => id !== selectedChatForLock._id));
+    }
+  };
+
+  const handlePINVerified = (verified) => {
+    if (verified) {
+      setVerifiedChats(prev => [...new Set([...prev, selectedChatForLock._id])]);
+      onSelectUser(selectedChatForLock);
+    }
   };
 
   const formatTime = (userId) => {
@@ -110,12 +174,13 @@ const ChatsPanel = ({ users, selectedUser, onSelectUser, lastMessages, unreadCou
               <div
                 key={u._id}
                 className={`chats-item ${selectedUser?._id === u._id ? 'active' : ''}`}
-                onClick={() => onSelectUser(u)}
+                onClick={() => handleSelectUser(u)}
               >
                 <UserAvatar username={u.username} size="md" />
                 <div className="chats-item-body">
                   <div className="chats-item-top">
                     <span className="chats-item-name">
+                      {lockedChats.includes(u._id) && <span className="chats-lock">🔒 </span>}
                       {isPinned && <span className="chats-pin">📌 </span>}
                       {u.username}
                     </span>
@@ -140,6 +205,13 @@ const ChatsPanel = ({ users, selectedUser, onSelectUser, lastMessages, unreadCou
                     <div style={{display:'flex',alignItems:'center',gap:6}}>
                       {unread > 0 && <span className="chats-badge">{unread}</span>}
                       <button
+                        className="chats-lock-btn"
+                        onClick={e => handleLockClick(e, u)}
+                        title={lockedChats.includes(u._id) ? 'Unlock chat' : 'Lock chat'}
+                      >
+                        {lockedChats.includes(u._id) ? '🔒' : '🔓'}
+                      </button>
+                      <button
                         className="chats-pin-btn"
                         onClick={e => togglePin(e, u._id)}
                         title={isPinned ? 'Unpin' : 'Pin'}
@@ -154,6 +226,27 @@ const ChatsPanel = ({ users, selectedUser, onSelectUser, lastMessages, unreadCou
           })
         )}
       </div>
+
+      {/* Modals */}
+      {selectedChatForLock && (
+        <>
+          <ChatLockModal
+            isOpen={showLockModal}
+            onClose={() => setShowLockModal(false)}
+            chatUserId={selectedChatForLock._id}
+            chatUsername={selectedChatForLock.username}
+            onLock={handleChatLocked}
+            isLocked={lockedChats.includes(selectedChatForLock._id)}
+          />
+          <PINVerificationModal
+            isOpen={showPINModal}
+            onClose={() => setShowPINModal(false)}
+            chatUserId={selectedChatForLock._id}
+            chatUsername={selectedChatForLock.username}
+            onVerified={handlePINVerified}
+          />
+        </>
+      )}
     </div>
   );
 };

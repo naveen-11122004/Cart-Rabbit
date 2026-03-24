@@ -1,0 +1,195 @@
+.chat-lock-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+}
+
+.chat-lock-modal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);
+  width: 90%;
+  max-width: 380px;
+  overflow: hidden;
+}
+
+body.dark-mode .chat-lock-modal {
+  background: var(--bg-secondary, #1a1f2e);
+}
+
+.lock-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e5e5ea;
+}
+
+body.dark-mode .lock-modal-header {
+  border-bottom-color: var(--border-color, #38444d);
+}
+
+.lock-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+body.dark-mode .lock-modal-header h3 {
+  color: var(--text-primary, #e1e8ed);
+}
+
+.lock-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 4px 8px;
+  transition: color 0.2s;
+}
+
+.lock-modal-close:hover {
+  color: #111827;
+}
+
+body.dark-mode .lock-modal-close {
+  color: var(--text-secondary, #b0b8c1);
+}
+
+body.dark-mode .lock-modal-close:hover {
+  color: var(--text-primary, #e1e8ed);
+}
+
+.lock-modal-body {
+  padding: 24px;
+}
+
+.lock-chat-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 20px;
+  text-align: center;
+}
+
+body.dark-mode .lock-chat-name {
+  color: var(--text-primary, #e1e8ed);
+}
+
+.lock-form-group {
+  margin-bottom: 16px;
+}
+
+.lock-form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+body.dark-mode .lock-form-group label {
+  color: var(--text-primary, #e1e8ed);
+}
+
+.lock-form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d7db;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.lock-form-group input:focus {
+  outline: none;
+  border-color: #007bfc;
+  box-shadow: 0 0 0 3px rgba(0, 123, 252, 0.1);
+}
+
+.lock-form-group input:disabled {
+  background: #f0f2f5;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+body.dark-mode .lock-form-group input {
+  background: var(--bg-tertiary, #222d3a);
+  border-color: var(--border-color, #38444d);
+  color: var(--text-primary, #e1e8ed);
+}
+
+body.dark-mode .lock-form-group input:focus {
+  border-color: #007bfc;
+  box-shadow: 0 0 0 3px rgba(0, 123, 252, 0.2);
+}
+
+body.dark-mode .lock-form-group input:disabled {
+  background: var(--bg-secondary, #1a1f2e);
+}
+
+.lock-error-message {
+  background: #fee;
+  border: 1px solid #fcc;
+  color: #c33;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  text-align: center;
+  font-weight: 500;
+}
+
+body.dark-mode .lock-error-message {
+  background: rgba(255, 0, 0, 0.1);
+  border-color: #ff6b6b;
+  color: #ff8a8a;
+}
+
+.lock-modal-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.lock-btn {
+  background: #007bfc;
+  color: white;
+}
+
+.lock-btn:hover:not(:disabled) {
+  background: #0056b3;
+  transform: scale(1.02);
+}
+
+.unlock-btn {
+  background: #10b981;
+  color: white;
+}
+
+.unlock-btn:hover:not(:disabled) {
+  background: #059669;
+  transform: scale(1.02);
+}
+
+.lock-modal-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

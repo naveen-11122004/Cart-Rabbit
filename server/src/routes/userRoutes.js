@@ -8,6 +8,10 @@ const {
   getAllUsers,
   updateWallpaper,
   getWallpaper,
+  lockChat,
+  unlockChat,
+  verifyChatLock,
+  getLockedChats,
 } = require('../controllers/userController');
 const authMiddleware = require('../middleware/authMiddleware');
 
@@ -23,5 +27,11 @@ router.get('/', getAllUsers);
 // Wallpaper routes (require authentication)
 router.post('/wallpaper', authMiddleware, updateWallpaper);
 router.get('/wallpaper', authMiddleware, getWallpaper);
+
+// Chat lock routes (require authentication)
+router.post('/chat-lock', authMiddleware, lockChat);
+router.post('/chat-unlock', authMiddleware, unlockChat);
+router.post('/chat-verify-lock', authMiddleware, verifyChatLock);
+router.get('/locked-chats', authMiddleware, getLockedChats);
 
 module.exports = router;

@@ -51,6 +51,21 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: '#ffffff', // Fallback background color
     },
+    lockedChats: [
+      {
+        chatUserId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+        },
+        pin: {
+          type: String, // Hashed PIN
+        },
+        lockedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );
