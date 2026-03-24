@@ -35,8 +35,10 @@ const ChatWindow = ({
   useEffect(() => {
     const fetchWallpaper = async () => {
       try {
-        // Get token from localStorage
-        const token = localStorage.getItem('token');
+        // Get token from user object stored in localStorage
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        const token = userData.token;
+
         if (!token) return;
 
         const response = await axios.get(`${API}/api/users/wallpaper`, {

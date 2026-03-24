@@ -68,8 +68,15 @@ const WallpaperPicker = ({ currentWallpaper, onSave, onClose }) => {
         wallpaperData.url = uploadedImage;
       }
 
-      // Get token from localStorage
-      const token = localStorage.getItem('token');
+      // Get token from localStorage (stored in user object)
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      const token = userData.token;
+
+      if (!token) {
+        alert('Session expired. Please login again.');
+        onClose();
+        return;
+      }
 
       // Save to backend
       await axios.post(`${API}/api/users/wallpaper`, wallpaperData, {
