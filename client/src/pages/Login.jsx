@@ -23,18 +23,32 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    
+    console.log('Login attempt:', { email, password }); // DEBUG
+    console.log('API URL:', API); // DEBUG
+    
     if (!email || !password) {
-      setError('Email and password are required');
+      const msg = 'Email and password are required';
+      setError(msg);
+      console.error(msg);
       return;
     }
     
     setLoading(true);
     try {
+      console.log('Sending login request to:', `${API}/api/users/login`); // DEBUG
       const res = await axios.post(`${API}/api/users/login`, { email, password });
+      console.log('Login response:', res.data); // DEBUG
       login(res.data);
       navigate('/chat');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      const errorMsg = err.response?.data?.message || err.message || 'Login failed';
+      setError(errorMsg);
+      console.error('Login error:', { 
+        status: err.response?.status,
+        data: err.response?.data,
+        message: err.message 
+      }); // DEBUG
     } finally {
       setLoading(false);
     }
