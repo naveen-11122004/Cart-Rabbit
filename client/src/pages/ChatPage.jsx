@@ -103,6 +103,7 @@ const ChatPage = () => {
         senderId: { _id: messageData.senderId },
         receiverId: { _id: messageData.receiverId },
         content: messageData.content,
+        messageType: messageData.messageType || 'text',
         file: messageData.file || null,
         createdAt: messageData.timestamp,
       };
@@ -535,7 +536,7 @@ const ChatPage = () => {
           onSendMessage={handleSendMessage}
           onSendFile={handleSendFile}
           isLoading={loading || fileLoading}
-          currentUserId={user.userId}
+          currentUser={user}
           onStartCall={handleStartCall}
           onReply={handleReplyMessage}
           onStar={handleStarMessage}

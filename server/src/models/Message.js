@@ -16,6 +16,11 @@ const messageSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    messageType: {
+      type: String,
+      enum: ['text', 'file', 'scheduled_call'],
+      default: 'text',
+    },
     file: {
       data: Buffer,
       mimetype: String,

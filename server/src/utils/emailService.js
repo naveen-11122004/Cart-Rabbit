@@ -1,15 +1,26 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true, // SSL/TLS for port 465
   auth: {
     user: process.env.GMAIL_USER,
     pass: process.env.GMAIL_PASSWORD,
   },
   tls: {
-    rejectUnauthorized: false
-  }
+    rejectUnauthorized: false // Helps bypass some local firewall/antivirus TLS issues
+  },
+  // 10sec timeouts; enough for slow networks, but doesn't hang the app forever if blocked
+  connectionTimeout: 10000, 
+  greetingTimeout: 10000,
+  socketTimeout: 10000,
 });
+
+// Verify configuration on startup (optional but helpful for dev)
+if (!process.env.GMAIL_USER) {
+  console.warn('⚠️ GMAIL_USER is not defined in .env file. Email service will not work.');
+}
 
 exports.sendOtpEmail = async (email, otp, purpose) => {
   const isLogin = purpose === 'login';
@@ -56,7 +67,18 @@ exports.sendOtpEmail = async (email, otp, purpose) => {
   try {
     return await transporter.sendMail(mailOptions);
   } catch (error) {
-    console.error('Nodemailer error sending OTP:', error);
+    console.error('\n--- NODEMAILER SMTP ERROR ---');
+    console.error('Error Code:', error.code || 'UNKNOWN');
+    console.error('Message:', error.message);
+    
+    if (error.code === 'ETIMEDOUT' || error.code === 'ESOCKET' || error.message.includes('Greeting')) {
+      console.log('\n💡 TROUBLESHOOTING:');
+      console.log('1. Your Antivirus (McAfee, Avast, etc.) or Windows Firewall is likely blocking Node.exe.');
+      console.log('2. Whitelist Node.exe in your security software or try disabling it temporarily to test.');
+      console.log('3. GOOD NEWS: Your account was still created! Use the OTP shown in the console below to continue.\n');
+    }
+    
+    console.error('---------------------------\n');
     throw error;
   }
 };

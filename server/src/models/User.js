@@ -35,7 +35,6 @@ const userSchema = new mongoose.Schema(
     },
     otpPurpose: {
       type: String,
-      enum: ['registration', 'login', null],
       default: null,
     },
   },

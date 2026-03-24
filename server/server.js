@@ -37,21 +37,28 @@ const io = new Server(server, {
 // Setup socket handlers
 socketHandler(io);
 
-// Connect to MongoDB
-mongoose
-  .connect(MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log('MongoDB connected');
+// Start HTTP server immediately (so port is always bound)
+server.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
 
-    // Start server
-    server.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
+// Connect to MongoDB with retry logic (never crash the process)
+const connectWithRetry = () => {
+  console.log('Attempting MongoDB connection...');
+  mongoose
+    .connect(MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 10000,
+    })
+    .then(() => {
+      console.log('MongoDB connected successfully');
+    })
+    .catch((error) => {
+      console.error('MongoDB connection failed:', error.message);
+      console.log('Retrying in 5 seconds...');
+      setTimeout(connectWithRetry, 5000);
     });
-  })
-  .catch((error) => {
-    console.error('MongoDB connection failed:', error);
-    process.exit(1);
-  });
+};
+
+connectWithRetry();

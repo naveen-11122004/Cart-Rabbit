@@ -1,7 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
+import axios from 'axios';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
+import ScheduleCallModal from './ScheduleCallModal';
 import './ChatWindow.css';
+
+const API = import.meta.env.VITE_API_URL;
 
 const ChatWindow = ({ 
   messages, 
@@ -9,7 +13,7 @@ const ChatWindow = ({
   onSendMessage, 
   onSendFile, 
   isLoading, 
-  currentUserId, 
+  currentUser, 
   onStartCall,
   onReply,
   onStar,
@@ -22,8 +26,18 @@ const ChatWindow = ({
   onCancelEdit
 }) => {
   const [showCallMenu, setShowCallMenu] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
   const messagesEndRef = useRef(null);
   const callMenuRef = useRef(null);
+
+  const handleSchedule = async (data) => {
+    try {
+      await axios.post(`${API}/api/calls/schedule`, data);
+      setShowScheduleModal(false);
+    } catch (err) {
+      console.error('Failed to schedule call:', err);
+    }
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -107,7 +121,12 @@ const ChatWindow = ({
               <div className="call-dropdown-links">
                 <button className="call-link-item"><span className="link-icon">➕</span> New group call</button>
                 <button className="call-link-item"><span className="link-icon">🔗</span> Send call link</button>
-                <button className="call-link-item"><span className="link-icon">📅</span> Schedule call</button>
+                <button 
+                  className="call-link-item" 
+                  onClick={() => { setShowCallMenu(false); setShowScheduleModal(true); }}
+                >
+                  <span className="link-icon">📅</span> Schedule call
+                </button>
               </div>
             </div>
           )}
@@ -127,8 +146,8 @@ const ChatWindow = ({
               message={msg}
               isSent={
                 typeof msg.senderId === 'object'
-                  ? msg.senderId._id === currentUserId
-                  : msg.senderId === currentUserId
+                  ? msg.senderId._id === currentUser.userId
+                  : msg.senderId === currentUser.userId
               }
               timestamp={msg.createdAt}
               onReply={onReply}
@@ -136,6 +155,7 @@ const ChatWindow = ({
               onForward={onForward}
               onEdit={onEdit}
               onDelete={onDelete}
+              onJoinCall={(callData) => onStartCall(callData.callType)}
             />
           ))
         )}
@@ -151,6 +171,14 @@ const ChatWindow = ({
         onCancelReply={onCancelReply}
         editingMessage={editingMessage}
         onCancelEdit={onCancelEdit}
+      />
+
+      <ScheduleCallModal 
+        isOpen={showScheduleModal} 
+        onClose={() => setShowScheduleModal(false)}
+        onSchedule={handleSchedule}
+        currentUser={{ _id: currentUser.userId, username: currentUser.username }}
+        recipientUser={selectedUser}
       />
     </div>
   );

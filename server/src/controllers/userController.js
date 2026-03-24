@@ -11,32 +11,44 @@ const OTP_TTL_MS = 10 * 60 * 1000; // 10 minutes
 // Creates user, sends OTP. Returns { pendingOtp: true, email }
 exports.register = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
-
+    let { username, email, password } = req.body;
     if (!username || !email || !password)
       return res.status(400).json({ message: 'All fields are required' });
 
-    let user = await User.findOne({ $or: [{ email }, { username }] });
-    if (user) {
-      // If user exists but not verified, allow re-sending OTP
-      if (!user.isEmailVerified) {
+    username = username.trim();
+    email = email.trim().toLowerCase();
+
+    // Check for existing user by email or username
+    const userByEmail = await User.findOne({ email });
+    const userByUsername = await User.findOne({ username });
+
+    if (userByEmail) {
+      if (!userByEmail.isEmailVerified) {
         const otp = generateOTP();
-        user.otp = otp;
-        user.otpExpiry = new Date(Date.now() + OTP_TTL_MS);
-        user.otpPurpose = 'registration';
-        await user.save();
-        await sendOtpEmail(email, otp, 'registration');
+        userByEmail.otp = otp;
+        userByEmail.otpExpiry = new Date(Date.now() + OTP_TTL_MS);
+        userByEmail.otpPurpose = 'registration';
+        await userByEmail.save();
+        
+        try { await sendOtpEmail(email, otp, 'registration'); } catch (_) { 
+          console.log(`👉 OTP for ${email}: ${otp} 👈`); 
+        }
+
         return res.status(200).json({
           message: 'OTP resent to your email.',
           pendingOtp: true,
           email,
         });
       }
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ message: 'Email already exists' });
+    }
+
+    if (userByUsername) {
+      return res.status(400).json({ message: 'Username is already taken' });
     }
 
     const otp = generateOTP();
-    user = new User({
+    const user = new User({
       username,
       email,
       password,
@@ -50,8 +62,11 @@ exports.register = async (req, res) => {
     try {
       await sendOtpEmail(email, otp, 'registration');
     } catch (emailError) {
-      console.error('OTP email error (registration):', emailError.message);
-      console.warn(`[DEV] OTP for ${email}: ${otp}`);
+      console.log('\n❌ ============================================= ❌');
+      console.log('EMAIL FAILED: Your local Antivirus or Firewall is blocking node.exe from sending emails.');
+      console.log(`Don't worry! Use this OTP to verify your account right now:`);
+      console.log(`👉 OTP for ${email}: ${otp} 👈`);
+      console.log('❌ ============================================= ❌\n');
       // Continue — user was saved; they can still verify with the OTP shown in server logs
     }
 
@@ -68,10 +83,11 @@ exports.register = async (req, res) => {
 // ─── Verify Registration OTP (Step 2) ──────────────────────────────────────
 exports.verifyRegistrationOtp = async (req, res) => {
   try {
-    const { email, otp } = req.body;
+    let { email, otp } = req.body;
     if (!email || !otp)
       return res.status(400).json({ message: 'Email and OTP are required' });
 
+    email = email.trim().toLowerCase();
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
@@ -93,7 +109,7 @@ exports.verifyRegistrationOtp = async (req, res) => {
     user.otpPurpose = null;
     await user.save();
 
-    try { await sendWelcomeEmail(user.email, user.username); } catch (_) {}
+    sendWelcomeEmail(user.email, user.username).catch(() => {});
 
     res.status(200).json({
       message: 'Email verified! You can now login.',
@@ -108,10 +124,11 @@ exports.verifyRegistrationOtp = async (req, res) => {
 // Validates credentials, sends OTP. Returns { pendingOtp: true, email }
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
     if (!email || !password)
       return res.status(400).json({ message: 'Email and password are required' });
 
+    email = email.trim().toLowerCase();
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
@@ -133,8 +150,11 @@ exports.login = async (req, res) => {
     try {
       await sendOtpEmail(email, otp, 'login');
     } catch (emailError) {
-      console.error('OTP email error (login):', emailError.message);
-      console.warn(`[DEV] OTP for ${email}: ${otp}`);
+      console.log('\n❌ ============================================= ❌');
+      console.log('EMAIL FAILED: Your local Antivirus or Firewall is blocking node.exe from sending emails.');
+      console.log(`Don't worry! Use this OTP to verify your account right now:`);
+      console.log(`👉 OTP for ${email}: ${otp} 👈`);
+      console.log('❌ ============================================= ❌\n');
       // Continue — still respond success; OTP is visible in server console
     }
 
@@ -151,10 +171,11 @@ exports.login = async (req, res) => {
 // ─── Verify Login OTP (Step 2) ─────────────────────────────────────────────
 exports.verifyLoginOtp = async (req, res) => {
   try {
-    const { email, otp } = req.body;
+    let { email, otp } = req.body;
     if (!email || !otp)
       return res.status(400).json({ message: 'Email and OTP are required' });
 
+    email = email.trim().toLowerCase();
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
@@ -186,10 +207,11 @@ exports.verifyLoginOtp = async (req, res) => {
 // ─── Resend OTP ────────────────────────────────────────────────────────────
 exports.resendOtp = async (req, res) => {
   try {
-    const { email, purpose } = req.body;
+    let { email, purpose } = req.body;
     if (!email || !purpose)
       return res.status(400).json({ message: 'Email and purpose are required' });
 
+    email = email.trim().toLowerCase();
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
@@ -202,7 +224,15 @@ exports.resendOtp = async (req, res) => {
     user.otpPurpose = purpose;
     await user.save();
 
-    await sendOtpEmail(email, otp, purpose);
+    try {
+      await sendOtpEmail(email, otp, purpose);
+    } catch (emailError) {
+      console.log('\n❌ ============================================= ❌');
+      console.log('EMAIL FAILED: Your local Antivirus or Firewall is blocking node.exe from sending emails.');
+      console.log(`Don't worry! Use this new OTP to verify your account right now:`);
+      console.log(`👉 RESENT OTP for ${email}: ${otp} 👈`);
+      console.log('❌ ============================================= ❌\n');
+    }
 
     res.status(200).json({ message: 'New OTP sent to your email.' });
   } catch (error) {
